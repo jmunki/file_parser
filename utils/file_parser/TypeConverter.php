@@ -13,6 +13,15 @@ require('XMLParser.php');
  */
 class TypeConverter {
 
+    /**
+     * Perform the parsing from one type to an intermediate PHP array
+     * and optionally another format
+     *
+     * @param $mix_data
+     * @param $int_file_type_from
+     * @param int $int_file_type_to
+     * @return array|string
+     */
     public function convert($mix_data, $int_file_type_from, $int_file_type_to = 0) {
 
         $obj_reader = $this->get_parser($int_file_type_from);
@@ -34,6 +43,12 @@ class TypeConverter {
     const TYPE_CSV  = 2;
     const TYPE_XML  = 3;
 
+    /**
+     * Factory function to return a parser based on an enumeration
+     *
+     * @param $int_file_type
+     * @return null|CSVParser|JSONParser|XMLParser
+     */
     private function get_parser($int_file_type){
         switch($int_file_type){
             case self::TYPE_JSON:
