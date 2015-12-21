@@ -14,11 +14,11 @@ class CSVParser extends AbstractParser {
         $arr_csv_rows = str_getcsv($str_input_csv, "\n");
 
         $arr_csv_headers = array_shift($arr_csv_rows);
-        $arr_headers = $this->split_header_row($arr_csv_headers);
+        $this->split_header_row($arr_csv_headers);
 
         $arr_normalised_data = [];
         foreach($arr_csv_rows as $str_csv_row){
-            $arr_normalised_data[] = $this->split_data_row($arr_headers, $str_csv_row);
+            $arr_normalised_data[] = $this->split_data_row($str_csv_row);
         }
 
         return $arr_normalised_data;
@@ -40,15 +40,11 @@ class CSVParser extends AbstractParser {
      * @return array|string
      */
     private function split_header_row($str_header_row){
-        $arr_raw_headers = explode(",", $str_header_row);
+        $arr_raw_headers = str_getcsv($str_header_row, ",");
 
-        $arr_normalised_headers = [];
         foreach($arr_raw_headers as $str_header){
-            $arr_sub_headers = explode("_", $str_header);
-            $str_key = array_shift($arr_sub_headers);
-            $arr_normalised_headers = $this->generate_sub_arrays($str_key, $arr_sub_headers);
+            $this->arr_headers_lookup_table[] = explode("_", $str_header);
         }
-        return $arr_normalised_headers;
     }
 
     /**
@@ -58,26 +54,30 @@ class CSVParser extends AbstractParser {
      * @param $arr_sub_headers
      * @return string
      */
-    private function generate_sub_arrays($str_key, $arr_sub_headers){
-        $str_this_key = array_shift($arr_sub_headers);
+    private function generate_sub_arrays(&$arr_structured_data, $arr_header_key, $arr_raw_data){
+        $str_this_key = array_shift($arr_header_key);
 
-        $arr_return[$str_key] = [];
-        if (count($arr_sub_headers) > 1){
+        if (count($arr_header_key)){
             //  Break down array further
-            $arr_return[$str_key] = $this->generate_sub_arrays($str_this_key, $arr_sub_headers);
+            if(! isset($arr_structured_data[$str_this_key])){
+                $arr_structured_data[$str_this_key] = array();
+            }
+            $this->generate_sub_arrays($arr_structured_data[$str_this_key], $arr_header_key, $arr_raw_data);
         } else {
             //  Leaf node
-            if($str_key){
-                $arr_return[$str_key] = "";
-            }else{
-                //  we don't have a key
-                $arr_return = "";
-            }
+            $arr_structured_data[$str_this_key] = $arr_raw_data;
         }
-        return $arr_return;
     }
 
-    private function split_data_row($arr_headers, $str_data_row){
+    private function split_data_row($str_data_row){
+        $arr_raw_data = str_getcsv($str_data_row, ",");
 
+        $arr_structured_data = array();
+        foreach($this->arr_headers_lookup_table as $int_i => $arr_header) {
+            $this->generate_sub_arrays($arr_structured_data, $arr_header, $arr_raw_data[$int_i]);
+        }
+        return $arr_structured_data;
     }
+
+    private $arr_headers_lookup_table = array();
 }
