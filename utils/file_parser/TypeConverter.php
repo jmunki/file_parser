@@ -31,18 +31,18 @@ class TypeConverter {
      */
     public function convert($mix_data, $int_file_type_from = 0, $int_file_type_to = 0) {
 
-        if ($int_file_type_from === 0) {
-            //  Default to CSV format as input if no type specified
-            $int_file_type_from = self::TYPE_CSV;
-        }
-
+        $mix_converted_data = "";
         $obj_reader = $this->get_parser($int_file_type_from);
-        $mix_converted_data = $obj_reader->read($mix_data);
+        if ($obj_reader) {
+            $mix_converted_data = $obj_reader->read($mix_data);
+        }
 
         //  Optionally convert to another type, otherwise return the normalised data array
         if ($int_file_type_to !== 0) {
             $obj_writer = $this->get_parser($int_file_type_to);
-            $mix_converted_data = $obj_writer->write($mix_converted_data);
+            if ($obj_writer) {
+                $mix_converted_data = $obj_writer->write($mix_converted_data);
+            }
         }
         return $mix_converted_data;
     }
