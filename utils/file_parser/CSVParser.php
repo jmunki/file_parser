@@ -31,7 +31,8 @@ class CSVParser extends AbstractParser {
      * @return string
      */
     public function write($arr_normalised_data){
-        return 'CSV STRING';
+        //  @TODO: combine array into custom CSV format - with underscores etc
+        return $arr_normalised_data;
     }
 
     /**
@@ -74,7 +75,7 @@ class CSVParser extends AbstractParser {
 
         $arr_structured_data = array();
         foreach($this->arr_headers_lookup_table as $int_i => $arr_header) {
-            $this->generate_sub_arrays($arr_structured_data, $arr_header, $arr_raw_data[$int_i]);
+            $this->generate_sub_arrays($arr_structured_data, $arr_header, trim($arr_raw_data[$int_i]));
         }
         return $arr_structured_data;
     }
