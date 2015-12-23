@@ -31,8 +31,49 @@ class CSVParser extends AbstractParser {
      * @return string
      */
     public function write($arr_normalised_data){
-        //  @TODO: combine array into custom CSV format - with underscores etc
-        return $arr_normalised_data;
+        $str_final_csv = "";
+        $str_header_row = "";
+        $this->combine_header_row($arr_normalised_data[0], $str_header_row);
+        $str_final_csv = rtrim($str_header_row, ',') . PHP_EOL;
+
+        $str_data_row = "";
+        foreach($arr_normalised_data as $str_value){
+            $this->combine_data_row($str_value, $str_data_row);
+            $str_data_row .= PHP_EOL;
+        }
+        $str_final_csv .= $str_data_row;
+        return $str_final_csv;
+    }
+
+    /**
+     * Convert the keys of an array into a csv
+     *
+     * @param $arr_data
+     * @param $str_header_row
+     * @param string $str_parent_element_name
+     */
+    private function combine_header_row($arr_data, &$str_header_row, $str_parent_element_name = ""){
+        foreach($arr_data as $str_key => $str_value) {
+            if (is_array($str_value)) {
+                $this->combine_header_row($str_value, $str_header_row, $str_key);
+            } else {
+                $str_delimiter = "";
+                if($str_parent_element_name !== ""){
+                    $str_delimiter = "_";
+                }
+                $str_header_row .= $str_parent_element_name.$str_delimiter.$str_key.",";
+            }
+        }
+    }
+
+    private function combine_data_row($arr_data, &$str_data_row){
+        foreach($arr_data as $str_value){
+            if (is_array($str_value)) {
+                $this->combine_data_row($str_value, $str_data_row);
+            } else {
+                $str_data_row .= $str_value.",";
+            }
+        }
     }
 
     /**
@@ -50,10 +91,9 @@ class CSVParser extends AbstractParser {
 
     /**
      * Handy util function for recursively generating arrays with a specific key
-     *
-     * @param $str_key
-     * @param $arr_sub_headers
-     * @return string
+     * @param $arr_structured_data
+     * @param $arr_header_key
+     * @param $arr_raw_data
      */
     private function generate_sub_arrays(&$arr_structured_data, $arr_header_key, $arr_raw_data){
         $str_this_key = array_shift($arr_header_key);
